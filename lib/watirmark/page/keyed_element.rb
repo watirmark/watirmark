@@ -7,19 +7,17 @@ module Watirmark
   end
 
   class KeyedElement
-    attr_reader :keyword, :process_page, :permissions
+    attr_reader :keyword, :permissions
 
     def initialize(context, options)
       @context      = context
       @keyword      = options[:keyword]
       @block        = options[:block]
-      @process_page = options[:process_page]
       @permissions  = options[:permissions] || {}
       @map = Watirmark::RadioMap.new(options[:map]) if options[:map]
     end
 
     def get *args
-      @process_page.activate
       watir_object = @context.instance_exec(*args, &@block)
       watir_object.extend(KeywordMethods)
       watir_object.radio_map = @map if @map
@@ -29,7 +27,6 @@ module Watirmark
 
     def set val
       return if val.nil?
-      @process_page.activate
       element = get
       val = @map.lookup(val) if @map
       case val

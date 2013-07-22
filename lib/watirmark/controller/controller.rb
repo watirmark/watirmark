@@ -39,16 +39,13 @@ module Watirmark
       end
 
       def populate_data
-        submit_process_page(@last_process_page.underscored_name) {submit} if populate_values
+        submit if populate_values
       end
 
       def populate_values
         @seen_value = false
-        @last_process_page = nil
         keyed_elements.each do |k|
           next unless k.populate_allowed?
-          submit_process_page_when_page_changes(k)
-          before_process_page(k)
           populate_keyword(k)
         end
         @seen_value
@@ -87,30 +84,12 @@ module Watirmark
         end
       end
 
-      def submit_process_page_when_page_changes(keyed_element)
-        return unless process_page_changed?(keyed_element) && @seen_value
-        if @last_process_page
-          submit_process_page(@last_process_page.underscored_name) {@view.process_page(@last_process_page.name).submit}
-        else
-          @view.process_page(@view.to_s).submit
-        end
-        @seen_value = false
-      end
-
       def call_method_if_exists(override)
         if respond_to?(override)
           send(override)
         else
           yield if block_given?
         end
-      end
-
-      def process_page_defined?(keyed_element)
-        !keyed_element.process_page.underscored_name.empty?
-      end
-
-      def process_page_changed?(keyed_element)
-        !!(@last_process_page && @last_process_page.underscored_name != keyed_element.process_page.underscored_name)
       end
 
       def before_keyword(keyed_element)
@@ -135,17 +114,6 @@ module Watirmark
 
       def keyword_value(keyed_element)
         call_method_if_exists("#{keyed_element.keyword}_value") {@model.send(keyed_element.keyword)}
-      end
-
-      def before_process_page(keyed_element)
-        if process_page_defined?(keyed_element) && (@last_process_page.nil? || process_page_changed?(keyed_element))
-          call_method_if_exists("before_process_page_#{keyed_element.process_page.underscored_name}")
-        end
-        @last_process_page = keyed_element.process_page
-      end
-
-      def submit_process_page(name, &block)
-        call_method_if_exists("submit_process_page_#{name}", &block)
       end
 
       def value(keyed_element)

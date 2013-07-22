@@ -21,14 +21,6 @@ module Watirmark
       self.class.native_keywords
     end
 
-    def process_pages
-      self.class.process_pages
-    end
-
-    def process_page(x)
-      process_pages.each { |page| return page if page.name == x }
-    end
-
   private
 
     def create_keyword_methods

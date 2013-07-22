@@ -54,16 +54,12 @@ describe Watirmark::WebPage::Controller do
     end
   end
 
-  class ProcessPageControllerView < Page
+  class SomeView < Page
 
     keyword(:a) { Element.new :a }
-    process_page('Page 1') do
-      keyword(:b) { Element.new :b }
-    end
-    process_page('Page 2') do
-      keyword(:c) { Element.new :c }
-      keyword(:d) { Element.new :d }
-    end
+    keyword(:b) { Element.new :b }
+    keyword(:c) { Element.new :c }
+    keyword(:d) { Element.new :d }
     keyword(:e) { method :e }
     keyword(:radio_map,
             ['M'] => 'male',
@@ -71,8 +67,8 @@ describe Watirmark::WebPage::Controller do
     ) { Page.browser.radio(:name, 'sex') }
   end
 
-  class TestProcessPageController < Watirmark::WebPage::Controller
-    @view = ProcessPageControllerView
+  class SomeController < Watirmark::WebPage::Controller
+    @view = SomeView
   end
 
   before :all do
@@ -91,7 +87,7 @@ describe Watirmark::WebPage::Controller do
 
   it 'should supportradio maps in controllers' do
     lambda {
-      TestProcessPageController.new(:radio_map => 'f').populate_data
+      SomeController.new(:radio_map => 'f').populate_data
     }.should_not raise_error
   end
 
@@ -156,17 +152,6 @@ describe Watirmark::WebPage::Controller do
 
   it 'should propogate page declaration to subclasses' do
     TestControllerSubclass.view.should == TestView
-  end
-
-  it 'should support before methods for process pages' do
-    c = TestProcessPageController.new({:a => 1, :b => 1, :c => 1, :d => 1})
-
-    def c.before_process_page_page_1;
-      true;
-    end
-
-    c.expects(:before_process_page_page_1).returns('true').once
-    c.populate_data
   end
 
   it 'should throw a Watirmark::VerificationException when a verification fails' do
@@ -317,16 +302,12 @@ end
 describe "Similar Models" do
 
   before :all do
-    class ProcessPageControllerView < Page
+    class SomeView < Page
 
       keyword(:a) { Element.new :a }
-      process_page('Page 1') do
-        keyword(:b) { Element.new :b }
-      end
-      process_page('Page 2') do
-        keyword(:c) { Element.new :c }
-        keyword(:d) { Element.new :d }
-      end
+      keyword(:b) { Element.new :b }
+      keyword(:c) { Element.new :c }
+      keyword(:d) { Element.new :d }
       keyword(:e) { method :e }
       keyword(:radio_map,
               ['M'] => 'male',
@@ -335,19 +316,19 @@ describe "Similar Models" do
     end
 
     class ModelA < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       defaults do
         radio_map { 'M' }
       end
     end
 
     class ModelC < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       model ModelA
     end
 
     class ModelB < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       model_type ModelA
       defaults do
         radio_map { 'f' }
@@ -355,73 +336,73 @@ describe "Similar Models" do
     end
 
     class ModelD < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       model ModelB
     end
 
     class ModelE < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       model ModelD
     end
 
     class ModelF < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       model_type ModelA
     end
 
     class ModelG < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
       model ModelF
     end
 
     class ModelH < Watirmark::Model::Factory
-      keywords ProcessPageControllerView.keywords
+      keywords SomeView.keywords
     end
 
-    class TestProcessPageController < Watirmark::WebPage::Controller
+    class SomeController < Watirmark::WebPage::Controller
       @model = ModelA
-      @view = ProcessPageControllerView
+      @view = SomeView
       public :value
     end
 
     class TestNoModelController < Watirmark::WebPage::Controller
-      @view = ProcessPageControllerView
+      @view = SomeView
     end
 
 
   end
 
   it 'should use the similar modelA' do
-    @controller = TestProcessPageController.new(ModelD.new)
+    @controller = SomeController.new(ModelD.new)
     @controller.model.should be_kind_of ModelB
     @controller.supermodel.should be_kind_of ModelD
   end
 
   it 'should use the top model' do
-    @controller = TestProcessPageController.new(ModelB.new)
+    @controller = SomeController.new(ModelB.new)
     @controller.model.should be_kind_of ModelB
     @controller.supermodel.should be_kind_of ModelB
   end
 
   it 'should use parent model' do
-    @controller = TestProcessPageController.new(ModelC.new)
+    @controller = SomeController.new(ModelC.new)
     @controller.model.should be_kind_of ModelA
     @controller.supermodel.should be_kind_of ModelC
   end
 
   it 'should call the smallest child similar to the model in controller' do
-    @controller = TestProcessPageController.new(ModelE.new)
+    @controller = SomeController.new(ModelE.new)
     @controller.model.should be_kind_of ModelB
     @controller.supermodel.should be_kind_of ModelE
 
   end
 
   it 'should select the correct model when base model has 2 similar models' do
-    @controller = TestProcessPageController.new(ModelG.new)
+    @controller = SomeController.new(ModelG.new)
     @controller.model.should be_kind_of ModelF
     @controller.supermodel.should be_kind_of ModelG
 
-    @controller = TestProcessPageController.new(ModelF.new)
+    @controller = SomeController.new(ModelF.new)
     @controller.model.should be_kind_of ModelF
     @controller.supermodel.should be_kind_of ModelF
   end
@@ -433,13 +414,13 @@ describe "Similar Models" do
   end
 
   it 'should use passed in model as @model when model_type is not defined' do
-    @controller = TestProcessPageController.new(ModelH.new)
+    @controller = SomeController.new(ModelH.new)
     @controller.model.should be_kind_of ModelH
     @controller.supermodel.should be_kind_of ModelH
   end
 
   it 'should allow us to override the default model' do
-    @controller = TestProcessPageController.new(ModelH.new)
+    @controller = SomeController.new(ModelH.new)
     @controller.model.should be_kind_of ModelH
     @controller.model = ModelA.new
     @controller.model.should be_kind_of ModelA
